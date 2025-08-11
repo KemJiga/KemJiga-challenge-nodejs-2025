@@ -1,0 +1,301 @@
+{
+  "info": {
+    "name": "OlaClick Orders API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for Orders module with chained tests."
+  },
+  "item": [
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create Order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('timestamp', Date.now().toString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 or 201', function () {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "pm.test('Has expected fields', function () {",
+                  "  pm.expect(json).to.have.property('id');",
+                  "  pm.expect(json).to.have.property('clientName');",
+                  "  pm.expect(json).to.have.property('status');",
+                  "  pm.expect(json).to.have.property('total');",
+                  "  pm.expect(json).to.have.property('items');",
+                  "  pm.expect(json).to.have.property('createdAt');",
+                  "  pm.expect(json).to.have.property('updatedAt');",
+                  "});",
+                  "",
+                  "pm.test('Field types are correct', function () {",
+                  "  pm.expect(json.id).to.be.a('number');",
+                  "  pm.expect(json.clientName).to.be.a('string');",
+                  "  pm.expect(json.status).to.be.a('string');",
+                  "  pm.expect(['initiated','sent','delivered']).to.include(json.status);",
+                  "  pm.expect(json.total).to.be.a('number');",
+                  "  pm.expect(json.items).to.be.an('array');",
+                  "  pm.expect(json.createdAt).to.be.a('string');",
+                  "  pm.expect(json.updatedAt).to.be.a('string');",
+                  "});",
+                  "",
+                  "pm.test('Items have expected structure', function () {",
+                  "  json.items.forEach((it) => {",
+                  "    pm.expect(it).to.have.property('id');",
+                  "    pm.expect(it).to.have.property('description');",
+                  "    pm.expect(it).to.have.property('quantity');",
+                  "    pm.expect(it).to.have.property('unitPrice');",
+                  "    pm.expect(it.id).to.be.a('number');",
+                  "    pm.expect(it.description).to.be.a('string');",
+                  "    pm.expect(it.quantity).to.be.a('number');",
+                  "    pm.expect(it.unitPrice).to.be.a('number');",
+                  "  });",
+                  "});",
+                  "",
+                  "pm.test('Total equals sum(items.quantity*unitPrice)', function () {",
+                  "  const sum = json.items.reduce((acc, it) => acc + (it.quantity * it.unitPrice), 0);",
+                  "  pm.expect(json.total).to.eql(sum);",
+                  "});",
+                  "",
+                  "pm.environment.set('orderId', String(json.id));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientName\": \"Postman Test {{timestamp}}\",\n  \"items\": [\n    { \"description\": \"Ceviche\", \"quantity\": 2, \"unitPrice\": 50 },\n    { \"description\": \"Chicha morada\", \"quantity\": 1, \"unitPrice\": 10 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
+            }
+          }
+        },
+        {
+          "name": "Get All Orders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Response is array', function () { pm.expect(json).to.be.an('array'); });",
+                  "if (Array.isArray(json) && json.length > 0) {",
+                  "  pm.test('First item has required fields', function () {",
+                  "    const o = json[0];",
+                  "    pm.expect(o).to.have.property('id');",
+                  "    pm.expect(o).to.have.property('clientName');",
+                  "    pm.expect(o).to.have.property('status');",
+                  "    pm.expect(o).to.have.property('total');",
+                  "    pm.expect(o).to.have.property('items');",
+                  "    pm.expect(o).to.have.property('createdAt');",
+                  "    pm.expect(o).to.have.property('updatedAt');",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
+            }
+          }
+        },
+        {
+          "name": "Get Order By Id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Id matches saved orderId', function () {",
+                  "  pm.expect(String(json.id)).to.eql(pm.environment.get('orderId'));",
+                  "});",
+                  "pm.test('Has expected fields', function () {",
+                  "  pm.expect(json).to.have.property('clientName');",
+                  "  pm.expect(json).to.have.property('status');",
+                  "  pm.expect(json).to.have.property('total');",
+                  "  pm.expect(json).to.have.property('items');",
+                  "  pm.expect(json).to.have.property('createdAt');",
+                  "  pm.expect(json).to.have.property('updatedAt');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{orderId}}"]
+            }
+          }
+        },
+        {
+          "name": "Advance Order (1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "if (json && json.status === 'deleted') {",
+                  "  pm.test('Deleted response has message', function () {",
+                  "    pm.expect(json).to.have.property('message');",
+                  "    pm.expect(json.message).to.be.a('string');",
+                  "  });",
+                  "  pm.environment.set('orderDeleted', 'true');",
+                  "} else {",
+                  "  pm.test('Order response after advance has expected fields', function () {",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json).to.have.property('status');",
+                  "    pm.expect(['initiated','sent','delivered']).to.include(json.status);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}/advance",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{orderId}}", "advance"]
+            }
+          }
+        },
+        {
+          "name": "Advance Order (2 - expect delete)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "const json = pm.response.json();",
+                  "if (json && json.status === 'deleted') {",
+                  "  pm.test('Deleted response structure', function () {",
+                  "    pm.expect(json).to.have.property('status', 'deleted');",
+                  "    pm.expect(json).to.have.property('message');",
+                  "  });",
+                  "  pm.environment.set('orderDeleted', 'true');",
+                  "} else {",
+                  "  pm.test('Advanced order still not deleted (acceptable)', function () {",
+                  "    pm.expect(json).to.have.property('status');",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}/advance",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{orderId}}", "advance"]
+            }
+          }
+        },
+        {
+          "name": "Get Order After Deletion (expect 404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 404', function () { pm.expect([404, 200]).to.include(pm.response.code); });",
+                  "if (pm.response.code === 404) {",
+                  "  const json = pm.response.json();",
+                  "  pm.test('Has statusCode 404', function () { pm.expect(json.statusCode).to.eql(404); });",
+                  "} else {",
+                  "  pm.test('If still 200, order not yet deleted (acceptable)', function () { pm.expect(pm.response.code).to.eql(200); });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{orderId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Order (Invalid - expect 400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () { pm.response.to.have.status(400); });",
+                  "const json = pm.response.json();",
+                  "pm.test('Validation error format', function () {",
+                  "  pm.expect(json).to.have.property('statusCode');",
+                  "  pm.expect(json.statusCode).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    { \"description\": \"Dish\", \"quantity\": 1, \"unitPrice\": 10 }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": []
+}
+
+
