@@ -21,17 +21,20 @@ Existen alternativas cloud para postgres y redis como:
 ## SetUp
 
 1. Clonar el repositorio:
-   ```
-    git clone https://github.com/KemJiga/KemJiga-challenge-nodejs-2025.git
-   ```
-   ```
-    cd KemJiga-challenge-nodejs-2025
-   ```
+
+```
+   git clone https://github.com/KemJiga/KemJiga-challenge-nodejs-2025.git
+```
+
+```
+   cd KemJiga-challenge-nodejs-2025
+```
+
 2. Crear .env (sigue el ejemplo en .env.example).
 3. Montar Docker
 
 ```
- docker-compose up --build
+   docker-compose up --build
 ```
 
 ## Tests
@@ -42,6 +45,8 @@ Dentro del proyecto se incluyo una prueba unitaria para el controlador de las or
 
 ```
 postman/
+├── collection.json
+├── enviroment.json
 src/
 ├── database/
 │   ├── sequelize.ts
