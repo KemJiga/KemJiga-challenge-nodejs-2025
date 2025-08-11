@@ -2,8 +2,7 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import sequelizeConfig from './database/sequelize';
-import { CacheModule } from '@nestjs/cache-manager';
-import * as redisStore from 'cache-manager-ioredis';
+import { RedisModule } from './redis/redis.module';
 import { OrdersModule } from './orders/orders.module';
 import { Sequelize } from 'sequelize-typescript';
 
@@ -17,18 +16,7 @@ import { Sequelize } from 'sequelize-typescript';
       inject: [ConfigService],
       useFactory: sequelizeConfig,
     }),
-    CacheModule.registerAsync({
-      isGlobal: true,
-      useFactory: (configService: ConfigService) => ({
-        store: redisStore,
-        host: configService.get('REDIS_HOST'),
-        port: configService.get('REDIS_PORT'),
-        password: configService.get('REDIS_PASSWORD'),
-        ttl: 30,
-        db: 0,
-      }),
-      inject: [ConfigService],
-    }),
+    RedisModule,
     OrdersModule,
   ],
 })

@@ -16,3 +16,8 @@ export interface OrderResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface OrderDeleteResponse {
+  status: 'deleted';
+  message: string;
+}
