@@ -5,6 +5,7 @@ import {
   Body,
   Param,
   ParseIntPipe,
+  HttpCode,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dtos/create-order.dto';
@@ -29,6 +30,7 @@ export class OrdersController {
     return this.ordersService.create(createOrderDto);
   }
 
+  @HttpCode(200)
   @Post(':id/advance')
   advanceOrderStatus(
     @Param('id', ParseIntPipe) id: number,
